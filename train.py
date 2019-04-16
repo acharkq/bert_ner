@@ -120,6 +120,7 @@ if __name__=="__main__":
     parser.add_argument("--logdir", type=str, default="checkpoints/01")
     parser.add_argument("--trainset", type=str, default="conll2003/train.txt")
     parser.add_argument("--validset", type=str, default="conll2003/valid.txt")
+    parser.add_argument("--testset", type=str, default="conll2003/test.txt")
     hp = parser.parse_args()
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -129,6 +130,7 @@ if __name__=="__main__":
 
     train_dataset = NerDataset(hp.trainset)
     eval_dataset = NerDataset(hp.validset)
+    test_dataset = NerDataset(hp.testset)
 
     train_iter = data.DataLoader(dataset=train_dataset,
                                  batch_size=hp.batch_size,
@@ -140,7 +142,11 @@ if __name__=="__main__":
                                  shuffle=False,
                                  num_workers=4,
                                  collate_fn=pad)
-
+    test_iter = data.DataLoader(dataset=test_dataset,
+                                 batch_size=hp.batch_size,
+                                 shuffle=False,
+                                 num_workers=4,
+                                 collate_fn=pad)
     optimizer = optim.Adam(model.parameters(), lr = hp.lr)
     criterion = nn.CrossEntropyLoss(ignore_index=0)
 
@@ -150,8 +156,7 @@ if __name__=="__main__":
         print(f"=========eval at epoch={epoch}=========")
         if not os.path.exists(hp.logdir): os.makedirs(hp.logdir)
         fname = os.path.join(hp.logdir, str(epoch))
-        precision, recall, f1 = eval(model, eval_iter, fname)
-
+        precision, recall, f1 = eval(model, eval_iter, fname + 'valid')
+        precision, recall, f1 = eval(model, test_iter, fname + 'test')
         torch.save(model.state_dict(), f"{fname}.pt")
         print(f"weights were saved to {fname}.pt")
-
