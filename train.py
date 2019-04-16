@@ -160,3 +160,11 @@ if __name__=="__main__":
         precision, recall, f1 = eval(model, test_iter, fname + 'test')
         torch.save(model.state_dict(), f"{fname}.pt")
         print(f"weights were saved to {fname}.pt")
+    
+    # evaluation on the train set
+    train_iter = data.DataLoader(dataset=train_dataset,
+                                 batch_size=hp.batch_size,
+                                 shuffle=False,
+                                 num_workers=4,
+                                 collate_fn=pad)
+    precision, recall, f1 = eval(model, train_iter, 'train')
