@@ -124,7 +124,7 @@ if __name__=="__main__":
     hp = parser.parse_args()
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
+    
     model = Net(hp.top_rnns, len(VOCAB), device, hp.finetuning).cuda()
     model = nn.DataParallel(model)
 
